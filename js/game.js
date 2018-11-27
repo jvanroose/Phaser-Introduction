@@ -26,12 +26,18 @@ var game = new Phaser.Game(config);
 var platforms;
 var player;
 var cursors;
+var jewels;
+var score = 0;
+var skulls;
+var scoreText;
 
 function preload(){
     console.log(this);
     this.load.image("background", "../assets/background.png");
     this.load.image("platform", "../assets/platform.png");
     this.load.spritesheet("player", "../assets/player.png", {frameWidth: 24, frameHeight: 24});
+    this.load.image("jewel", "../assets/jewel.png");
+    this.load.image("skull", "../assets/skull.png");
 }
 
 function create(){
@@ -66,6 +72,27 @@ function create(){
         repeat: -1,
         frameRate: 3
     });
+    
+    jewels = this.physics.add.group({
+        key: "jewel",
+        setXY: {x: 16, y: 16, stepX: 50},
+        repeat: 8
+    });
+    
+    jewels.children.iterate(function(jewel){
+        jewel.setBounce(Math.random() + 0.3);
+    });
+    
+    this.physics.add.collider(jewels, platforms);
+    this.physics.add.overlap(player, jewels, pickUpJewel);
+    
+    skulls = this.physics.add.group();
+    this.physics.add.collider(skulls, platforms);
+    createSkull();
+    
+    this.physics.add.overlap(player, skulls, killPlayer);
+    
+    scoreText = this.add.text(10,10, 'Score: 0', {fontSize: '32px', fill: '#000'});
 }
 
 function update(){
@@ -86,6 +113,41 @@ function update(){
         player.body.setVelocityY(-400);
     }
 }
+
+function pickUpJewel(player, jewel){
+    score++;
+    scoreText.setText("Score: " + score);
+    jewel.disableBody(true, true);
+    
+    if(jewels.countActive() === 0){
+        jewels.children.iterate(function(jewel){
+            jewel.enableBody(true, jewel.x, 16, true, true);
+            jewel.setBounce(Math.random() + 0.3);
+        }); 
+        
+        createSkull();
+    }
+}
+
+function createSkull(){
+    var skull = skulls.create(300, 16, "skull");
+    skull.setCollideWorldBounds(true);
+    skull.setBounce(1);
+    skull.setVelocityX(Math.random()*200);
+}
+
+function killPlayer(){
+    this.physics.pause();
+    player.setTint("#000000");
+}
+
+
+
+
+
+
+
+
 
 
 
