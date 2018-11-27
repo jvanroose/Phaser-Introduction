@@ -15,9 +15,11 @@ var config = {
         default: 'arcade',
         
         arcade: {
-            gravity: {y: 100}
+            gravity: {y: 350}
         }
-    }
+    },
+    
+    pixelArt: true
 }
 
 var game = new Phaser.Game(config);
@@ -50,17 +52,38 @@ function create(){
     this.physics.add.collider(player, platforms);
     
     cursors = this.input.keyboard.createCursorKeys();
+    
+    this.anims.create({
+        key: "walk",
+        frames: this.anims.generateFrameNumbers("player", {start: 4, end: 10}),
+        repeat: -1,
+        frameRate: 15
+    });
+    
+    this.anims.create({
+        key: "idle",
+        frames: this.anims.generateFrameNumbers("player", {frames:[1,4]}),
+        repeat: -1,
+        frameRate: 3
+    });
 }
 
 function update(){
     if(cursors.right.isDown){
         player.body.setVelocityX(100);
+        player.anims.play("walk", true);
         player.flipX = false;
     } else if(cursors.left.isDown){
         player.body.setVelocityX(-100);
+        player.anims.play("walk", true);
         player.flipX = true;
     } else {
         player.body.setVelocityX(0);
+        player.anims.play("idle", true);
+    }
+    
+    if(cursors.space.isDown && player.body.touching.down){
+        player.body.setVelocityY(-400);
     }
 }
 
